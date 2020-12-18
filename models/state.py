@@ -7,22 +7,23 @@ from sqlalchemy.orm import relationship, backref
 from os import getenv
 import models
 
-class State(BaseModel):
-    """ State class """
-    __tablename__ = 'states'
-    if getenv('HBNB_TYPE_STORAGE') == 'db':
-        name = Column(String(128), nullable=False)
-        cities = relationship('City', backref='state',
-                              cascade="all, delete")
-    else:
-        name = ""
+class State(BaseModel, Base):
+    __tablename__ = "states"
+    name = Column(String(128), nullable=False)
 
+    cities = relationship("City", backref="state",
+                          cascade="all, delete, delete-orphan")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    if getenv('HBNB_TYPE_STORAGE', '') != 'db':
         @property
         def cities(self):
-            """Attribute that returns the list of City."""
-            list_cities = []
-            all_cities = models.storage.all(City)
-            for id_city, city_o in all_cities.items():
-                if self.id == city_o.state_id:
-                    list_cities.append(city_o)
-            return list_cities
+            all_cities = models.storage.all("City")
+            temp = []
+            for c_id in all_cities:
+                if all_cities[c_id].state_id == self.id:
+                    temp.append(all_cities[c_id])
+
+            return temp
