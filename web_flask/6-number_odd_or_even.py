@@ -44,4 +44,4 @@ def number_odd_or_even(n):
         return render_template(doc, n=n, number="odd")
 
 if __name__ == "__main__":
-        app.run(host='0.0.0.0', port=5000) /n
+        app.run(host='0.0.0.0', port=5000)
