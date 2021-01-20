@@ -28,14 +28,16 @@ class DBStorage:
     def all(self, cls=None):
         storage = {}
         if cls is None:
-            for cls_name in self.valid_classes:
-                for instance in self.__session.query(eval(cls_name)):
-                    storage[instance.id] = instance
+           consulta = self.__session.query(User, State, City, Amenity,
+                                            Place, Review)
+            for obj in consulta:
+                name_cl = type(obj).__name__ + "." + str(obj.id)
+                storage[name_cl] = obj
         else:
-            if cls not in self.valid_classes:
-                return
-            for instance in self.__session.query(eval(cls)):
-                storage[instance.id] = instance
+            consulta1 = self.__session.query(cls).all()
+             for obj in consulta1:
+                name_cl = type(obj).__name__ + "." + str(obj.id)
+                storage[name_cl] = obj
 
         return storage
 
