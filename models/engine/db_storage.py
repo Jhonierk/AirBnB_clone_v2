@@ -1,9 +1,14 @@
 #!/usr/bin/python3
-import os
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm.scoping import scoped_session
+from models.base_model import BaseModel, Base
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
 from sqlalchemy import create_engine
-from models import *
+from sqlalchemy.orm import sessionmaker, scoped_session
+import os
 
 
 class DBStorage:
@@ -28,18 +33,21 @@ class DBStorage:
     def all(self, cls=None):
         storage = {}
         if cls is None:
-           consulta = self.__session.query(User, State, City, Amenity,
-                                            Place, Review)
-            for obj in consulta:
-                name_cl = type(obj).__name__ + "." + str(obj.id)
-                storage[name_cl] = obj
+          objects = self.__session.query(User, State, City,  Amenity,
+                                           Place, Review)
+            for obj in objects:
+                key = type(obj).__name__ + "." + str(obj.id)
+                class_objects[key] = obj
+                # return class_objects with all class objects
         else:
-            consulta1 = self.__session.query(cls).all()
-             for obj in consulta1:
-                name_cl = type(obj).__name__ + "." + str(obj.id)
-                storage[name_cl] = obj
+            # make sure use eval(cls) when filestorage is being used
+            # objects = self.__session.query(eval(cls)).all()
+            objects = self.__session.query(cls).all()
+            for obj in objects:
+                key = type(obj).__name__ + "." + str(obj.id)
+                class_objects[key] = obj
 
-        return storage
+        return class_objects
 
     def new(self, obj):
         self.__session.add(obj)
@@ -64,7 +72,9 @@ class DBStorage:
 
     def reload(self):
         Base.metadata.create_all(self.__engine)
-        self.__session = scoped_session(sessionmaker(bind=self.__engine))
+        Session = scoped_session(sessionmaker(bind=self.__engine,
+                                              expire_on_commit=False))
+        self.__session = Session()
 
     def delete(self, obj=None):
         if obj is None:
