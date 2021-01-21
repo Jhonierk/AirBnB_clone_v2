@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 
 @app.teardown_appcontext
-def db_close(db):
+def session_close(self):
     """Close sessions """
     storage.close()
 
@@ -18,8 +18,8 @@ def db_close(db):
 @app.route('/states_list', strict_slashes=False)
 def list_state():
     """ List State """
-    states = storage.all(State).values()
-    return render_template('7-states_list.html', states=states)
+    return render_template("7-states_list.html",
+                           states=storage.all(State).values())
 
 
 if __name__ == '__main__':
